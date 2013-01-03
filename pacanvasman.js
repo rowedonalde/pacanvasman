@@ -3,18 +3,32 @@
  *
  * Scripting for the Pacanvasman game
  */
+
+//FIXME: I need to modularize all of this into its own lambda
+
 var LEFT = 37;
 var UP = 38;
 var RIGHT = 39;
 var DOWN = 40;
+var ESC = 27
+var FRAMELENGTH = 20; //20ms
+
+// Global variables for maintaining game state:
+var direction = false,
+frame = 0,
+gameContext,
+gameCanvas,
+interval;
+
 
 /*
  * Start the game:
  */
-
 window.onload = function() {
-  var gameCanvas = document.getElementById('game');
-  var gameContext = gameCanvas.getContext('2d');
+
+
+  gameCanvas = document.getElementById('game');
+  gameContext = gameCanvas.getContext('2d');
   
   // Start Pacanvasman facing to the right:
   drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'right');
@@ -25,7 +39,6 @@ window.onload = function() {
   
   window.onkeydown = function(event) {
     var keyCode = event.keyCode;
-    var direction = false;
     
     // TODO: make this go by actual direction
     switch (keyCode) {
@@ -41,22 +54,33 @@ window.onload = function() {
       case DOWN:
         direction = 'down';
         break;
+      case ESC:
+        // Freeze to death
+        clearInterval(interval);
+        break;
       default:
         break;
     }
-    
-    // Clear and redraw:
-    // TODO: This should change the gamestate for the next frame instead
-    if (direction) {
-      gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-      drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, direction);
-    }
   };
+  
+  // Advance to the next frame:
+  interval = window.setInterval(nextFrame, FRAMELENGTH);
+  
 };
 
 
 
-
+/*
+ * Resolve the gamestate for each frame:
+ */
+var nextFrame = function() {
+  //Clear to begin with:
+  gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  
+  drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, direction);
+  
+  //console.log('next frame');
+};
 
 
 /*
