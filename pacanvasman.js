@@ -97,6 +97,16 @@ var nextFrame = function() {
     default:
       break;
   }
+  
+  // Handle edge warps:
+  while (pacX < 0) {
+    pacX += gameCanvas.width;
+  }
+  while (pacY < 0) {
+    pacY += gameCanvas.height;
+  }
+  pacX = pacX % gameCanvas.width;
+  pacY = pacY % gameCanvas.height;
 
   // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
