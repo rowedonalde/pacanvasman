@@ -4,14 +4,40 @@
  * Scripting for the Pacanvasman game
  */
 
-window.onload = (
-  function() {
-    var gameCanvas = document.getElementById('game');
-    var gameContext = gameCanvas.getContext('2d');
+/*
+ * Start the game:
+ */
+
+window.onload = function() {
+  var gameCanvas = document.getElementById('game');
+  var gameContext = gameCanvas.getContext('2d');
+  
+  // Start Pacanvasman facing to the right:
+  drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'right');
+  
+  /*
+   * Handle keypresses:
+   */
+  
+  window.onkeydown = function(event) {
+    var keyCode = event.keyCode;
     
-    drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'right');
-  }
-);
+    // TODO: make this go by actual direction
+    //switch (keyCode) {
+    //  case 
+    //}
+    
+    // Clear and redraw:
+    // TODO: This should change the gamestate for the next frame instead
+    gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'left');
+  };
+};
+
+
+
+
+
 
 /*
  * Render the Pacanvasman character
