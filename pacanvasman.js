@@ -9,20 +9,43 @@ window.onload = (
     var gameCanvas = document.getElementById('game');
     var gameContext = gameCanvas.getContext('2d');
     
-    drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2);
+    drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'right');
   }
 );
 
 /*
  * Render the Pacanvasman character
  */
-var drawPac = function(context, x, y) {
+var drawPac = function(context, x, y, facing) {
   // Draw circle for body:
   context.fillStyle = 'yellow';
   var bodyRadius = 25;
+  // Angle of facial orientation:
+  var faceAngle, eyeX, eyeY;
+  switch (facing) {
+    case 'down':
+      faceAngle = Math.PI / 2;
+      eyeX = x + bodyRadius / 2;
+      eyeY = y;
+      break;
+    case 'left':
+      faceAngle = Math.PI;
+      eyeX = x;
+      eyeY = y - bodyRadius / 2;
+      break;
+    case 'up':
+      faceAngle = Math.PI * 1.5;
+      eyeX = x - bodyRadius / 2;
+      eyeY = y;
+      break;
+    default: //including 'right'
+      faceAngle = 0;
+      eyeX = x;
+      eyeY = y - bodyRadius / 2;
+  }
   // TODO: start and end arc should be determined by frame to depict mouth moving
-  var startAngle = Math.PI / 4;
-  var endAngle = Math.PI * 1.75;
+  var startAngle = Math.PI / 4 + faceAngle;
+  var endAngle = Math.PI * 1.75 + faceAngle;
   var isClockwise = false;
   // Fill the circle:
   context.beginPath();
@@ -37,6 +60,6 @@ var drawPac = function(context, x, y) {
   endAngle = Math.PI * 2;
   // Fill the eye:
   context.beginPath();
-  context.arc(x, y - bodyRadius / 2, eyeRadius, startAngle, endAngle, isClockwise);
+  context.arc(eyeX, eyeY, eyeRadius, startAngle, endAngle, isClockwise);
   context.fill();
 };
