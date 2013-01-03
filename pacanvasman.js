@@ -3,6 +3,10 @@
  *
  * Scripting for the Pacanvasman game
  */
+var LEFT = 37;
+var UP = 38;
+var RIGHT = 39;
+var DOWN = 40;
 
 /*
  * Start the game:
@@ -21,16 +25,32 @@ window.onload = function() {
   
   window.onkeydown = function(event) {
     var keyCode = event.keyCode;
+    var direction = false;
     
     // TODO: make this go by actual direction
-    //switch (keyCode) {
-    //  case 
-    //}
+    switch (keyCode) {
+      case LEFT:
+        direction = 'left';
+        break;
+      case RIGHT:
+        direction = 'right';
+        break;
+      case UP:
+        direction = 'up';
+        break;
+      case DOWN:
+        direction = 'down';
+        break;
+      default:
+        break;
+    }
     
     // Clear and redraw:
     // TODO: This should change the gamestate for the next frame instead
-    gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-    drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'left');
+    if (direction) {
+      gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+      drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, direction);
+    }
   };
 };
 
