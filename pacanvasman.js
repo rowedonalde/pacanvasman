@@ -12,13 +12,16 @@ var RIGHT = 39;
 var DOWN = 40;
 var ESC = 27
 var FRAMELENGTH = 20; //20ms
+var PACSPEED = 2; //1 pixel per frame
 
 // Global variables for maintaining game state:
 var direction = false,
 frame = 0,
 gameContext,
 gameCanvas,
-interval;
+interval,
+pacX,
+pacY;
 
 
 /*
@@ -30,8 +33,11 @@ window.onload = function() {
   gameCanvas = document.getElementById('game');
   gameContext = gameCanvas.getContext('2d');
   
-  // Start Pacanvasman facing to the right:
-  drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, 'right');
+  // Start Pacanvasman facing to the right at the center of the canvas:
+  pacX = gameCanvas.width / 2;
+  pacY = gameCanvas.height / 2;
+  drawPac(gameContext, pacX, pacY, 'right'); //if it's literally right, then pac doesn't
+                                             //move until you hit an arrow
   
   /*
    * Handle keypresses:
@@ -74,10 +80,28 @@ window.onload = function() {
  * Resolve the gamestate for each frame:
  */
 var nextFrame = function() {
-  //Clear to begin with:
+  // Update pacanvasman coordinates:
+  switch (direction) {
+    case 'left':
+      pacX -= PACSPEED;
+      break;
+    case 'right':
+      pacX += PACSPEED;
+      break;
+    case 'up':
+      pacY -= PACSPEED;
+      break;
+    case 'down':
+      pacY += PACSPEED;
+      break;
+    default:
+      break;
+  }
+
+  // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   
-  drawPac(gameContext, gameCanvas.width / 2, gameCanvas.height / 2, direction);
+  drawPac(gameContext, pacX, pacY, direction);
   
   //console.log('next frame');
 };
