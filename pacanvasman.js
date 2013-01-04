@@ -16,6 +16,7 @@ var PACSPEED = 2; //1 pixel per frame
 var PACRADIUS = 25;
 var TURNTHRESHOLD = 5; //How close do you need to be to a grid junction to turn
 var GRIDSIZE = 50; //The distance between grid junctions
+var WALLTHICKNESS = 5;
 
 // Global variables for maintaining game state:
 var pacDirection = false,
@@ -26,6 +27,12 @@ gameCanvas,
 interval,
 pacX,
 pacY;
+
+// These are the walls that make the maze. They should be built on tracks. Each
+// 
+var walls = [
+  { startX: 0, startY: 50, endX: 500, endY: 50}
+];
 
 
 /*
@@ -120,6 +127,10 @@ var nextFrame = function() {
   // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   
+  // Render the background and walls (probably should put this in another layer:
+  drawBackground();
+  drawWalls();
+  
   drawPac(gameContext, pacX, pacY, pacDirection);
   
   //console.log('next frame');
@@ -175,6 +186,32 @@ var drawPac = function(context, x, y, facing) {
   context.beginPath();
   context.arc(eyeX, eyeY, eyeRadius, startAngle, endAngle, isClockwise);
   context.fill();
+};
+
+
+/*
+ * Render the background (not including walls)
+ */
+var drawBackground = function() {
+  // Just draw a black rectangle:
+  gameContext.fillStyle = 'black';
+  gameContext.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+};
+
+
+/*
+ * Render the walls
+ */
+var drawWalls = function() {
+  gameContext.strokeStyle = 'blue';
+  
+  for (var i = 0; i < walls.length; i += 1) {
+    gameContext.lineWidth = WALLTHICKNESS;
+    gameContext.beginPath();
+    gameContext.moveTo(walls[i].startX, walls[i].startY);
+    gameContext.lineTo(walls[i].endX, walls[i].endY);
+    gameContext.stroke();
+  }
 };
 
 
