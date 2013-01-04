@@ -31,7 +31,8 @@ pacY;
 // These are the walls that make the maze. They should be built on tracks. Each
 // 
 var walls = [
-  { startX: 0, startY: 50, endX: 500, endY: 50}
+  { startX: 0, startY: 50, endX: 500, endY: 50 },
+  { startX: 100, startY: 100, endX: 100, endY: 400 }
 ];
 
 
@@ -267,5 +268,44 @@ var handleTurn = function() {
       // If you're too far from either corner, just stop dead:
       isMoving = false;
     }
+  }
+};
+
+
+/*
+ * Return true if a character is facing close to a wall and needs to stop.
+ * Return false if he can keep going.
+ * This function assumes that all walls are either horizontal or vertical.
+ */
+var hasCollided = function(x, y, facing) {
+  // First, decide whether each wall is horizontal or vertical:
+  var horizontalWalls = [];
+  var verticalWalls = [];
+  for (var i = 0; i < walls.length; i += 1) {
+    // If both X coordinates are the same, the wall is vertical:
+    if (walls[i].startX === walls[i].endX) {
+      verticalWalls.push(walls[i]);
+    } else {
+      horizontalWalls.push(walls[i]);
+    }
+  }
+  
+  // Check for collisions:
+  // If the character is going horizontally, check all vertical walls. If his Y
+  // lies between startY and endY for the wall, stop him if his X is too close
+  // to startX (Without Loss of Generality). Or, stop him if his Y matches
+  // startY (WLOG) of any horizontal wall and his X is too close to either
+  // startX or endX of the wall.
+  if (facing === 'left' || facing === 'right') {
+    for (i = 0; i < verticalWalls.length; i += 1) {
+      if (y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)
+          && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+          && Math.abs(x - verticalWalls[i].startX) <= PACRADIUS) {
+         
+         return true;   
+      } //TODO handle horizontal walls
+    }
+  } else if {
+    //TODO handle vice-versa
   }
 };
