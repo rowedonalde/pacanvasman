@@ -305,7 +305,7 @@ var hasCollided = function(x, y, facing) {
          return true;   
       } //TODO handle horizontal walls
     }
-  } else if {
+  } else {
     //TODO handle vice-versa
   }
 };
