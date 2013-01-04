@@ -13,9 +13,13 @@ var DOWN = 40;
 var ESC = 27
 var FRAMELENGTH = 20; //20ms
 var PACSPEED = 2; //1 pixel per frame
+var PACRADIUS = 25;
+var TURNTHRESHOLD = 5; //How close do you need to be to a grid junction to turn
+var GRIDSIZE = 50; //The distance between grid junctions
 
 // Global variables for maintaining game state:
-var direction = false,
+var pacDirection = false,
+isMoving = false,
 frame = 0,
 gameContext,
 gameCanvas,
@@ -46,19 +50,22 @@ window.onload = function() {
   window.onkeydown = function(event) {
     var keyCode = event.keyCode;
     
-    // TODO: make this go by actual direction
     switch (keyCode) {
       case LEFT:
-        direction = 'left';
+        pacDirection = 'left';
+        handleTurn();
         break;
       case RIGHT:
-        direction = 'right';
+        pacDirection = 'right';
+        handleTurn();
         break;
       case UP:
-        direction = 'up';
+        pacDirection = 'up';
+        handleTurn()
         break;
       case DOWN:
-        direction = 'down';
+        pacDirection = 'down';
+        handleTurn();
         break;
       case ESC:
         // Freeze to death
@@ -80,22 +87,24 @@ window.onload = function() {
  * Resolve the gamestate for each frame:
  */
 var nextFrame = function() {
-  // Update pacanvasman coordinates:
-  switch (direction) {
-    case 'left':
-      pacX -= PACSPEED;
-      break;
-    case 'right':
-      pacX += PACSPEED;
-      break;
-    case 'up':
-      pacY -= PACSPEED;
-      break;
-    case 'down':
-      pacY += PACSPEED;
-      break;
-    default:
-      break;
+  if (isMoving) {
+    // Update pacanvasman coordinates if he can move:
+    switch (pacDirection) {
+      case 'left':
+        pacX -= PACSPEED;
+        break;
+      case 'right':
+        pacX += PACSPEED;
+        break;
+      case 'up':
+        pacY -= PACSPEED;
+        break;
+      case 'down':
+        pacY += PACSPEED;
+        break;
+      default:
+        break;
+    }
   }
   
   // Handle edge warps:
@@ -111,7 +120,7 @@ var nextFrame = function() {
   // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   
-  drawPac(gameContext, pacX, pacY, direction);
+  drawPac(gameContext, pacX, pacY, pacDirection);
   
   //console.log('next frame');
 };
@@ -123,7 +132,7 @@ var nextFrame = function() {
 var drawPac = function(context, x, y, facing) {
   // Draw circle for body:
   context.fillStyle = 'yellow';
-  var bodyRadius = 25;
+  var bodyRadius = PACRADIUS;
   // Angle of facial orientation:
   var faceAngle, eyeX, eyeY;
   switch (facing) {
@@ -166,4 +175,60 @@ var drawPac = function(context, x, y, facing) {
   context.beginPath();
   context.arc(eyeX, eyeY, eyeRadius, startAngle, endAngle, isClockwise);
   context.fill();
+};
+
+
+/*
+ * When Pacanvasman wants to turn, determine whether he's close enough to the
+ * movement grid junction. If he's close enough after turning, re-center him 
+ * on the track and check to see whether there's a wall (TODO). If he's not
+ * close enough to the junction, make him stop.
+ */
+var handleTurn = function() {
+  // Distance since the last corner, will be dx or dy:
+  var distanceSinceCorner;
+  
+  // Handle horizontal:
+  if (pacDirection === 'left' || pacDirection === 'right') {
+    distanceSinceCorner = pacY % GRIDSIZE;
+    //console.log(distanceSinceCorner);
+    
+    // If you're slightly ahead of the corner:
+    // TODO: These should also check for walls once I get those going
+    if (distanceSinceCorner <= TURNTHRESHOLD) {
+      // ...jump back to the last junction and make the turn:
+      // (Note that if you're already on a horizontal track, this is
+      // equivalent to staying on that track.)
+      pacY -= distanceSinceCorner;
+      isMoving = true;
+    } else if (GRIDSIZE - distanceSinceCorner <= TURNTHRESHOLD) {
+      // If you're slightly behind the next corner:
+      pacY += GRIDSIZE - distanceSinceCorner;
+      isMoving = true;
+    } else {
+      // If you're too far from either corner, just stop dead:
+      isMoving = false;
+    }
+  } else {
+    //Handle vertical:
+    distanceSinceCorner = pacX % GRIDSIZE;
+    //console.log(distanceSinceCorner);
+    
+    // If you're slightly ahead of the corner:
+    // TODO: These should also check for walls once I get those going
+    if (distanceSinceCorner <= TURNTHRESHOLD) {
+      // ...jump back to the last junction and make the turn:
+      // (Note that if you're already on a horizontal track, this is
+      // equivalent to staying on that track.)
+      pacX -= distanceSinceCorner;
+      isMoving = true;
+    } else if (GRIDSIZE - distanceSinceCorner <= TURNTHRESHOLD) {
+      // If you're slightly behind the next corner:
+      pacX += GRIDSIZE - distanceSinceCorner;
+      isMoving = true;
+    } else {
+      // If you're too far from either corner, just stop dead:
+      isMoving = false;
+    }
+  }
 };
