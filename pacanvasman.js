@@ -218,7 +218,7 @@ var handleTurn = function() {
     // TODO: These should also check for walls once I get those going
     if (distanceSinceCorner <= TURNTHRESHOLD) {
       // ...jump back to the last junction and make the turn:
-      // (Note that if you're already on a horizontal track, this is
+      // (Note that if you're already on a vertical track, this is
       // equivalent to staying on that track.)
       pacX -= distanceSinceCorner;
       isMoving = true;
