@@ -327,7 +327,7 @@ var hasCollided = function(x, y, facing) {
     }
     for (i = 0; i < horizontalWalls.length; i += 1) {
       if (Math.abs(y - horizontalWalls[i].startY) < GRIDSIZE
-      && Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX) - x <= GRIDSIZE) {
+      && Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX) - x <= GRIDSIZE) {
         return true;
       }
     }
@@ -336,12 +336,36 @@ var hasCollided = function(x, y, facing) {
     // Look for horizontal walls above the character within the minimum Y
     // distance and whose right and left X values the character is in between:
     for (i = 0; i < horizontalWalls.length; i += 1) {
-      //TODO fill this code in
-      //if (horizontalWalls[i].startY < y
-      //&&
+      if (horizontalWalls[i].startY < y
+      && y - horizontalWalls[i].startY <= GRIDSIZE
+      && x <= Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
+      && x >= Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
+        return true;
+      }
+    }
+    for (i = 0; i < verticalWalls.length; i += 1) {
+      if (Math.abs(x - verticalWalls[i].startX) < GRIDSIZE
+      && y - Math.max(verticalWalls[i].startY, verticalWalls[i].endY) <= GRIDSIZE) {
+        return true;
+      }
+    }
+  } else if (facing === 'down') {
+    for (i = 0; i < horizontalWalls.length; i += 1) {
+      if (horizontalWalls[i].startY > y
+      && horizontalWalls[i].startY - y <= GRIDSIZE
+      && x <= Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
+      && x >= Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
+        return true;
+      }      
+    }
+    for (i = 0; i < verticalWalls.length; i += 1) {
+      if (Math.abs(x - verticalWalls[i].startX) < GRIDSIZE
+      && Math.min(verticalWalls[i].startY, verticalWalls[i].endY) - y <= GRIDSIZE) {
+        return true;
+      }
     }
   }
   
   // If you're here, the character hasn't hit anything:
-  return false
+  return false;
 };
