@@ -16,6 +16,7 @@ var PACSPEED = 2; //1 pixel per frame
 var PACRADIUS = 25;
 var DOTRADIUS = 5;
 var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
+var EATTHRESHOLD = 1; //How close do you need to be to eat something
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 
@@ -208,7 +209,13 @@ var nextFrame = function() {
   }
   pacX = pacX % gameCanvas.width;
   pacY = pacY % gameCanvas.height;
-
+  
+  // Try to eat a dot where pacanvasman ends up:
+  //eatDot(25, 25);
+  if (eatDot(pacX, pacY)) {
+    console.log('nom');
+  }
+  
   // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   
@@ -222,8 +229,6 @@ var nextFrame = function() {
   }
   
   drawPac(gameContext, pacX, pacY, pacDirection);
-  
-  //console.log('next frame');
 };
 
 
@@ -490,3 +495,22 @@ var hasCollided = function(x, y, facing) {
   // If you're here, the character hasn't hit anything:
   return false;
 };
+
+
+/*
+ * Checks to see if a dot is at a given location.
+ * If there is a dot there, make the dot disappear and return true.
+ * If there is not a dot there, return false.
+ */
+var eatDot = function(x, y) {
+  for (var i = 0; i < dots.length; i += 1) {
+    var dot = dots[i];
+    if (Math.abs(dot.x - x) <= EATTHRESHOLD
+    && Math.abs(dot.y - y) <= EATTHRESHOLD) {
+      dots.splice(i, 1);
+      return true;
+    }
+  }
+  // Go through the whole list of dots;
+  return false;
+}
