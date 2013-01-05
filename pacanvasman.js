@@ -14,6 +14,7 @@ var ESC = 27
 var FRAMELENGTH = 20; //20ms
 var PACSPEED = 2; //1 pixel per frame
 var PACRADIUS = 25;
+var DOTRADIUS = 5;
 var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
@@ -26,7 +27,9 @@ gameContext,
 gameCanvas,
 interval,
 pacX,
-pacY;
+pacY,
+i,
+j;
 
 // These are the walls that make the maze. They should built along the same
 // tracks that the characters follow. Also, if a wall is built on the
@@ -93,7 +96,7 @@ var walls = [
 // Decide whether each wall is horizontal or vertical:
 var horizontalWalls = [];
 var verticalWalls = [];
-for (var i = 0; i < walls.length; i += 1) {
+for (i = 0; i < walls.length; i += 1) {
   // If both X coordinates are the same, the wall is vertical:
   if (walls[i].startX === walls[i].endX) {
     verticalWalls.push(walls[i]);
@@ -101,6 +104,11 @@ for (var i = 0; i < walls.length; i += 1) {
     horizontalWalls.push(walls[i]);
   }
 }
+
+// These are the dots that pacanvasman eats. For right now, they'll just
+// start at every walkable junction (the "odd" ones).
+var dots = [];
+
 
 
 /*
@@ -111,6 +119,13 @@ window.onload = function() {
 
   gameCanvas = document.getElementById('game');
   gameContext = gameCanvas.getContext('2d');
+  
+  // Spawn the dots:
+  for (i = GRIDSIZE; i < gameCanvas.height; i += GRIDSIZE * 2) {
+    for (j = GRIDSIZE; j < gameCanvas.width; j += GRIDSIZE * 2) {
+      dots.push({x: j, y: i});
+    }
+  }
   
   // Start Pacanvasman facing to the right near the center of the canvas:
   //pacX = gameCanvas.width / 2;
@@ -201,6 +216,11 @@ var nextFrame = function() {
   drawBackground();
   drawWalls();
   
+  // Render the dots:
+  for (var i = 0; i < dots.length; i += 1) {
+    drawDot(gameContext, dots[i]);
+  }
+  
   drawPac(gameContext, pacX, pacY, pacDirection);
   
   //console.log('next frame');
@@ -255,6 +275,19 @@ var drawPac = function(context, x, y, facing) {
   // Fill the eye:
   context.beginPath();
   context.arc(eyeX, eyeY, eyeRadius, startAngle, endAngle, isClockwise);
+  context.fill();
+};
+
+
+/*
+ * Render a dot
+ */
+var drawDot = function(context, dot) {
+  context.fillStyle = 'orange';
+  var startAngle = 0;
+  var endAngle = Math.PI * 2;
+  context.beginPath();
+  context.arc(dot.x, dot.y, DOTRADIUS, startAngle, endAngle, true);
   context.fill();
 };
 
