@@ -12,11 +12,11 @@ var RIGHT = 39;
 var DOWN = 40;
 var ESC = 27
 var FRAMELENGTH = 20; //20ms
-var PACSPEED = 2; //1 pixel per frame
+var PACSPEED = 2; //2 pixel per frame
 var PACRADIUS = 25;
 var DOTRADIUS = 5;
 var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
-var EATTHRESHOLD = 1; //How close do you need to be to eat something
+var EATTHRESHOLD = 10; //How close do you need to be to eat something
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 
@@ -198,6 +198,10 @@ var nextFrame = function() {
       default:
         break;
     }
+  } else {
+    // Even if isMoving was true, if hasCollided is true, we want to
+    // make isMoving be false:
+    isMoving = false;
   }
   
   // Handle edge warps:
@@ -228,19 +232,19 @@ var nextFrame = function() {
     drawDot(gameContext, dots[i]);
   }
   
-  drawPac(gameContext, pacX, pacY, pacDirection);
+  drawPac(gameContext, pacX, pacY, pacDirection, isMoving);
 };
 
 
 /*
  * Render the Pacanvasman character
  */
-var drawPac = function(context, x, y, facing) {
+var drawPac = function(context, x, y, facing, isMoving) {
   // Draw circle for body:
   context.fillStyle = 'yellow';
   var bodyRadius = PACRADIUS;
   // Angle of facial orientation:
-  var faceAngle, eyeX, eyeY;
+  var faceAngle, eyeX, eyeY, startAngle, endAngle;
   switch (facing) {
     case 'down':
       faceAngle = Math.PI / 2;
@@ -262,9 +266,34 @@ var drawPac = function(context, x, y, facing) {
       eyeX = x;
       eyeY = y - bodyRadius / 2;
   }
-  // TODO: start and end arc should be determined by frame to depict mouth moving
-  var startAngle = Math.PI / 4 + faceAngle;
-  var endAngle = Math.PI * 1.75 + faceAngle;
+  
+  if (facing === 'left' || facing === 'right') {
+    // We want the range to be [0, PI/4] and the wavelength to be
+    // GRIDSIZE*2 pixels:
+    if (isMoving) {
+      startAngle = faceAngle + Math.PI / 8 * (Math.cos(x * Math.PI / 25) + 1);
+      endAngle = 2 * Math.PI + faceAngle - Math.PI / 8 * (Math.cos(x * Math.PI / 25) + 1);
+    } else {
+      startAngle = faceAngle + Math.PI / 4;
+      endAngle = 2 * Math.PI + faceAngle - Math.PI / 4;
+    }
+  } else {
+    if (isMoving) {
+      startAngle = faceAngle + Math.PI / 8 * (Math.cos(y * Math.PI / 25) + 1);
+      endAngle = 2 * Math.PI + faceAngle - Math.PI / 8 * (Math.cos(y * Math.PI / 25) + 1);
+    } else {
+      startAngle = faceAngle + Math.PI / 4;
+      endAngle = faceAngle - Math.PI / 4;
+    }
+  }
+  
+  // Fixes bug where Pacanvasman would disappear when his mouth was closed
+  // since startAngle was equal to endAngle according to the sine function:
+  if (startAngle === endAngle) {
+    startAngle = 0;
+    endAngle = Math.PI * 2;
+  }
+  
   var isClockwise = false;
   // Fill the circle:
   context.beginPath();
