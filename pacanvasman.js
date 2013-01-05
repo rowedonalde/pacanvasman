@@ -90,6 +90,18 @@ var walls = [
   { startX: 450, startY: 450, endX: 500, endY: 450 },
 ];
 
+// Decide whether each wall is horizontal or vertical:
+var horizontalWalls = [];
+var verticalWalls = [];
+for (var i = 0; i < walls.length; i += 1) {
+  // If both X coordinates are the same, the wall is vertical:
+  if (walls[i].startX === walls[i].endX) {
+    verticalWalls.push(walls[i]);
+  } else {
+    horizontalWalls.push(walls[i]);
+  }
+}
+
 
 /*
  * Start the game:
@@ -263,11 +275,38 @@ var drawBackground = function() {
 var drawWalls = function() {
   gameContext.strokeStyle = 'dodgerblue';
   
-  for (var i = 0; i < walls.length; i += 1) {
-    gameContext.lineWidth = WALLTHICKNESS;
+  // The current wall;
+  var wall;
+  
+  // Vertical walls:
+  for (var i = 0; i < verticalWalls.length; i += 1) {
+    wall = verticalWalls[i];
+    
+    // Edge walls should be twice as thick:
+    if (wall.startX === 0 || wall.startX === gameCanvas.width) {
+      gameContext.lineWidth = WALLTHICKNESS * 2;
+    } else {
+      gameContext.lineWidth = WALLTHICKNESS;
+    }
     gameContext.beginPath();
-    gameContext.moveTo(walls[i].startX, walls[i].startY);
-    gameContext.lineTo(walls[i].endX, walls[i].endY);
+    gameContext.moveTo(wall.startX, wall.startY);
+    gameContext.lineTo(wall.endX, wall.endY);
+    gameContext.stroke();
+  }
+  
+  // Horizontal walls:
+  for (i = 0; i < horizontalWalls.length; i += 1) {
+    wall = horizontalWalls[i];
+    
+    // Edge walls should be twice as thick:
+    if (wall.startY === 0 || wall.startY === gameCanvas.width) {
+      gameContext.lineWidth = WALLTHICKNESS * 2;
+    } else {
+      gameContext.lineWidth = WALLTHICKNESS;
+    }
+    gameContext.beginPath();
+    gameContext.moveTo(wall.startX, wall.startY);
+    gameContext.lineTo(wall.endX, wall.endY);
     gameContext.stroke();
   }
 };
@@ -341,23 +380,11 @@ var handleTurn = function() {
 // handle this case or only validate walls that have a corresponding wall on
 // the opposite edge (probably the latter).
 var hasCollided = function(x, y, facing) {
-  // First, decide whether each wall is horizontal or vertical:
-  //TODO move this out of this function into initial wall validation
-  var horizontalWalls = [];
-  var verticalWalls = [];
-  for (var i = 0; i < walls.length; i += 1) {
-    // If both X coordinates are the same, the wall is vertical:
-    if (walls[i].startX === walls[i].endX) {
-      verticalWalls.push(walls[i]);
-    } else {
-      horizontalWalls.push(walls[i]);
-    }
-  }
   
   if (facing === 'left') {
     // Look for vertical walls to the left of the character and that are within
     // the minimum distance:
-    for (i = 0; i < verticalWalls.length; i += 1) {
+    for (var i = 0; i < verticalWalls.length; i += 1) {
       if (verticalWalls[i].startX < x
       && x - verticalWalls[i].startX <= GRIDSIZE
       && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
