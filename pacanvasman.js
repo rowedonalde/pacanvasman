@@ -14,7 +14,7 @@ var ESC = 27
 var FRAMELENGTH = 20; //20ms
 var PACSPEED = 2; //1 pixel per frame
 var PACRADIUS = 25;
-var TURNTHRESHOLD = 5; //How close do you need to be to a grid junction to turn
+var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 
@@ -28,11 +28,66 @@ interval,
 pacX,
 pacY;
 
-// These are the walls that make the maze. They should be built on tracks. Each
-// 
+// These are the walls that make the maze. They should built along the same
+// tracks that the characters follow. Also, if a wall is built on the
+// perimeter, a corresponding wall should be built on the opposite edge.
 var walls = [
-  { startX: 0, startY: 50, endX: 500, endY: 50 },
-  { startX: 100, startY: 100, endX: 100, endY: 400 }
+  //{ startX: 0, startY: 50, endX: 500, endY: 50 },
+  //{ startX: 100, startY: 100, endX: 100, endY: 400 },
+  //{ startX: 0, startY: 0, endX: 500, endY: 0 }
+  // Edge walls:
+  { startX: 0, startY: 0, endX: 50, endY: 0 },
+  { startX: 100, startY: 0, endX: 400, endY: 0 },
+  { startX: 450, startY: 0, endX: 500, endY: 0 },
+  
+  { startX: 0, startY: 500, endX: 50, endY: 500 },
+  { startX: 100, startY: 500, endX: 400, endY: 500 },
+  { startX: 450, startY: 500, endX: 500, endY: 500 },
+  
+  { startX: 0, startY: 0, endX: 0, endY: 50 },
+  { startX: 0, startY: 100, endX: 0, endY: 400 },
+  { startX: 0, startY: 450, endX: 0, endY: 500 },
+  
+  { startX: 500, startY: 0, endX: 500, endY: 50 },
+  { startX: 500, startY: 100, endX: 500, endY: 400 },
+  { startX: 500, startY: 450, endX: 500, endY: 500 },
+  
+  // Internal walls (gonna keep it simple at first):
+  { startX: 0, startY: 50, endX: 50, endY: 50 },
+  { startX: 100, startY: 50, endX: 400, endY: 50 },
+  { startX: 450, startY: 50, endX: 500, endY: 50 },
+  
+  { startX: 0, startY: 100, endX: 50, endY: 100 },
+  { startX: 100, startY: 100, endX: 400, endY: 100 },
+  { startX: 450, startY: 100, endX: 500, endY: 100 },
+  
+  { startX: 0, startY: 150, endX: 50, endY: 150 },
+  { startX: 100, startY: 150, endX: 400, endY: 150 },
+  { startX: 450, startY: 150, endX: 500, endY: 150 },
+  
+  { startX: 0, startY: 200, endX: 50, endY: 200 },
+  { startX: 100, startY: 200, endX: 400, endY: 200 },
+  { startX: 450, startY: 200, endX: 500, endY: 200 },
+  
+  { startX: 0, startY: 250, endX: 50, endY: 250 },
+  { startX: 100, startY: 250, endX: 400, endY: 250 },
+  { startX: 450, startY: 250, endX: 500, endY: 250 },
+  
+  { startX: 0, startY: 300, endX: 50, endY: 300 },
+  { startX: 100, startY: 300, endX: 400, endY: 300 },
+  { startX: 450, startY: 300, endX: 500, endY: 300 },
+  
+  { startX: 0, startY: 350, endX: 50, endY: 350 },
+  { startX: 100, startY: 350, endX: 400, endY: 350 },
+  { startX: 450, startY: 350, endX: 500, endY: 350 },
+  
+  { startX: 0, startY: 400, endX: 50, endY: 400 },
+  { startX: 100, startY: 400, endX: 400, endY: 400 },
+  { startX: 450, startY: 400, endX: 500, endY: 400 },
+  
+  { startX: 0, startY: 450, endX: 50, endY: 450 },
+  { startX: 100, startY: 450, endX: 400, endY: 450 },
+  { startX: 450, startY: 450, endX: 500, endY: 450 },
 ];
 
 
@@ -45,9 +100,11 @@ window.onload = function() {
   gameCanvas = document.getElementById('game');
   gameContext = gameCanvas.getContext('2d');
   
-  // Start Pacanvasman facing to the right at the center of the canvas:
-  pacX = gameCanvas.width / 2;
-  pacY = gameCanvas.height / 2;
+  // Start Pacanvasman facing to the right near the center of the canvas:
+  //pacX = gameCanvas.width / 2;
+  //pacY = gameCanvas.height / 2;
+  pacX = 250;
+  pacY = 225;
   drawPac(gameContext, pacX, pacY, 'right'); //if it's literally right, then pac doesn't
                                              //move until you hit an arrow
   
@@ -204,7 +261,7 @@ var drawBackground = function() {
  * Render the walls
  */
 var drawWalls = function() {
-  gameContext.strokeStyle = 'blue';
+  gameContext.strokeStyle = 'dodgerblue';
   
   for (var i = 0; i < walls.length; i += 1) {
     gameContext.lineWidth = WALLTHICKNESS;
@@ -279,6 +336,10 @@ var handleTurn = function() {
  * This function assumes that all walls are either horizontal or vertical.
  */
 // FIXME: This code is cramped and the formatting is shit
+// FIXME: This doesn't work when warping over an edge: pacanvasman just warps
+// in over the wall if there's a wall at the edge. Decide whether you want to
+// handle this case or only validate walls that have a corresponding wall on
+// the opposite edge (probably the latter).
 var hasCollided = function(x, y, facing) {
   // First, decide whether each wall is horizontal or vertical:
   //TODO move this out of this function into initial wall validation
