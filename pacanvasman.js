@@ -278,6 +278,7 @@ var handleTurn = function() {
  * Return false if he can keep going.
  * This function assumes that all walls are either horizontal or vertical.
  */
+// FIXME: This code is cramped and the formatting is shit
 var hasCollided = function(x, y, facing) {
   // First, decide whether each wall is horizontal or vertical:
   //TODO move this out of this function into initial wall validation
@@ -291,38 +292,6 @@ var hasCollided = function(x, y, facing) {
       horizontalWalls.push(walls[i]);
     }
   }
-  
-  // Check for collisions:
-  // If the character is going horizontally, check all vertical walls. If his Y
-  // lies between startY and endY for the wall, stop him if his X is too close
-  // to startX (Without Loss of Generality). Or, stop him if his Y matches
-  // startY (WLOG) of any horizontal wall and his X is too close to either
-  // startX or endX of the wall.
-  
-  // FIXME: this needs to be done for each individual direction. As it is
-  // currently, a character can get stuck if it runs into a wall and then wants
-  // to go back in the opposite direction.
-  //if (facing === 'left' || facing === 'right') {
-  //  for (i = 0; i < verticalWalls.length; i += 1) {
-  //    if (y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)
-  //    && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
-  //    && Math.abs(x - verticalWalls[i].startX) <= PACRADIUS) {
-  //      
-  //       return true;
-  //  }
-  //  // Edge case horizontal walls:
-  //  for (i = 0; i < horizontalWalls.length; i += 1) {
-  //    var horizontalStartX = Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX);
-  //    var horizontalEndX = Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX);
-  //    // First comparison should be < since we want to be able to walk next to a
-  //    // wall:
-  //    if (Math.abs(y - horizontalWalls[i].startY) < PACRADIUS
-  //    && (
-  //  }
-    
-  //} else {
-  //  //TODO handle vice-versa
-  //}
   
   if (facing === 'left') {
     // Look for vertical walls to the left of the character and that are within
@@ -361,6 +330,15 @@ var hasCollided = function(x, y, facing) {
       && Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX) - x <= GRIDSIZE) {
         return true;
       }
+    }
+  } else if (facing === 'up') {
+    // Remember that down is positive and up is negative.
+    // Look for horizontal walls above the character within the minimum Y
+    // distance and whose right and left X values the character is in between:
+    for (i = 0; i < horizontalWalls.length; i += 1) {
+      //TODO fill this code in
+      //if (horizontalWalls[i].startY < y
+      //&&
     }
   }
   
