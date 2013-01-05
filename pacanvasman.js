@@ -15,7 +15,7 @@ var FRAMELENGTH = 20; //20ms
 var PACSPEED = 2; //1 pixel per frame
 var PACRADIUS = 25;
 var TURNTHRESHOLD = 5; //How close do you need to be to a grid junction to turn
-var GRIDSIZE = 50; //The distance between grid junctions
+var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 
 // Global variables for maintaining game state:
@@ -95,7 +95,7 @@ window.onload = function() {
  * Resolve the gamestate for each frame:
  */
 var nextFrame = function() {
-  if (isMoving) {
+  if (isMoving && !(hasCollided(pacX, pacY, pacDirection))) {
     // Update pacanvasman coordinates if he can move:
     switch (pacDirection) {
       case 'left':
@@ -243,6 +243,7 @@ var handleTurn = function() {
       // If you're slightly behind the next corner:
       pacY += GRIDSIZE - distanceSinceCorner;
       isMoving = true;
+      //isMoving = !(hasCollided(pacX, pacY, pacDirection));
     } else {
       // If you're too far from either corner, just stop dead:
       isMoving = false;
@@ -279,6 +280,7 @@ var handleTurn = function() {
  */
 var hasCollided = function(x, y, facing) {
   // First, decide whether each wall is horizontal or vertical:
+  //TODO move this out of this function into initial wall validation
   var horizontalWalls = [];
   var verticalWalls = [];
   for (var i = 0; i < walls.length; i += 1) {
@@ -296,16 +298,56 @@ var hasCollided = function(x, y, facing) {
   // to startX (Without Loss of Generality). Or, stop him if his Y matches
   // startY (WLOG) of any horizontal wall and his X is too close to either
   // startX or endX of the wall.
-  if (facing === 'left' || facing === 'right') {
+  
+  // FIXME: this needs to be done for each individual direction. As it is
+  // currently, a character can get stuck if it runs into a wall and then wants
+  // to go back in the opposite direction.
+  //if (facing === 'left' || facing === 'right') {
+  //  for (i = 0; i < verticalWalls.length; i += 1) {
+  //    if (y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)
+  //    && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+  //    && Math.abs(x - verticalWalls[i].startX) <= PACRADIUS) {
+  //      
+  //       return true;
+  //  }
+  //  // Edge case horizontal walls:
+  //  for (i = 0; i < horizontalWalls.length; i += 1) {
+  //    var horizontalStartX = Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX);
+  //    var horizontalEndX = Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX);
+  //    // First comparison should be < since we want to be able to walk next to a
+  //    // wall:
+  //    if (Math.abs(y - horizontalWalls[i].startY) < PACRADIUS
+  //    && (
+  //  }
+    
+  //} else {
+  //  //TODO handle vice-versa
+  //}
+  
+  if (facing === 'left') {
+    // Look for vertical walls to the left of the character and that are within
+    // the minimum distance:
     for (i = 0; i < verticalWalls.length; i += 1) {
-      if (y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)
-          && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
-          && Math.abs(x - verticalWalls[i].startX) <= PACRADIUS) {
-         
-         return true;   
-      } //TODO handle horizontal walls
+      if (verticalWalls[i].startX < x
+      && x - verticalWalls[i].startX <= GRIDSIZE
+      && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+      && y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
+        return true;
+      }
     }
-  } else {
-    //TODO handle vice-versa
+    // Look for horizontal walls to the left of the character whose right point
+    // has the same y-coordinate as the character and is within the minimum
+    // distance:
+    for (i = 0; i < horizontalWalls.length; i += 1) {
+      // The first condition needs to be < and not <= in case the character is
+      // adjacent to the wall.
+      if (Math.abs(y - horizontalWalls[i].startY) < GRIDSIZE
+      && x - Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX) <= GRIDSIZE) {
+        return true;
+      }
+    }
   }
+  
+  // If you're here, the character hasn't hit anything:
+  return false
 };
