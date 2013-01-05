@@ -346,6 +346,22 @@ var hasCollided = function(x, y, facing) {
         return true;
       }
     }
+  } else if (facing === 'right') {
+    // Vice-versa of above
+    for (i = 0; i < verticalWalls.length; i += 1) {
+      if (verticalWalls[i].startX > x
+      && verticalWalls[i].startX - x <= GRIDSIZE
+      && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+      && y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
+        return true;
+      } 
+    }
+    for (i = 0; i < horizontalWalls.length; i += 1) {
+      if (Math.abs(y - horizontalWalls[i].startY) < GRIDSIZE
+      && Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX) - x <= GRIDSIZE) {
+        return true;
+      }
+    }
   }
   
   // If you're here, the character hasn't hit anything:
