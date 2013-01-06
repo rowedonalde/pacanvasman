@@ -18,6 +18,7 @@ var GHOSTRADIUS = 15;
 var DOTRADIUS = 5;
 var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
 var EATTHRESHOLD = 10; //How close do you need to be to eat something
+var GHOSTTHRESHOLD = 5; //How close you need to be to a ghost to die
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 
@@ -30,6 +31,7 @@ gameCanvas,
 interval,
 pacX,
 pacY,
+isPacAlive = true,
 i,
 j;
 
@@ -226,6 +228,9 @@ var nextFrame = function() {
     console.log('nom');
   }
   
+  // Kill Pacanvasman if he runs into a ghost:
+  isPacAlive = !(isGhostAt(pacX, pacY));
+  
   // Clear before drawing:
   gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   
@@ -246,9 +251,14 @@ var nextFrame = function() {
     drawGhost(gameContext, ghosts[i]);
   }
   
-  // If there are no more dots, you win:
-  if (dots.length === 0) {
+  // If there are no more dots and you're still alive, you win:
+  if (dots.length === 0 && isPacAlive) {
     pacWins();
+  }
+  
+  // If Pacanvasman is dead, you lose:
+  if (!isPacAlive) {
+    pacLoses();
   }
 };
 
@@ -352,6 +362,8 @@ var drawGhost = function(context, ghost) {
   context.lineTo(ghost.x + 0.5 * GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
   context.lineTo(ghost.x + 0.75 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
   context.lineTo(ghost.x + GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
+  
+  // TODO draw the eyes
   
   context.fill();
 };
@@ -586,7 +598,7 @@ var eatDot = function(x, y) {
   }
   // Go through the whole list of dots;
   return false;
-}
+};
 
 /*
  * Triggers a win state for Pacanvasman
@@ -601,4 +613,39 @@ var pacWins = function() {
   gameContext.textBaseline = 'middle';
   gameContext.fillStyle = 'orange';
   gameContext.fillText('YOU WIN!', gameCanvas.width / 2, gameCanvas.height / 2);
+};
+
+
+/*
+ * Triggers a lose state for Pacanvasman
+ */
+var pacLoses = function() {
+  // Kill animation:
+  clearInterval(interval);
+  
+  // Draw announcement:
+  gameContext.font = '72px sans-serif';
+  gameContext.textAlign = 'center';
+  gameContext.textBaseline = 'middle';
+  gameContext.fillStyle = 'green';
+  gameContext.fillText('YOU LOSE!', gameCanvas.width / 2, gameCanvas.height / 2);
 }
+
+
+/*
+ * Checks to see if a ghost is at a given location.
+ * If there is a ghost there, return true.
+ * If there is not, return false.
+ */
+var isGhostAt = function(x, y) {
+  for (var i = 0; i < ghosts.length; i += 1) {
+    var ghost = ghosts[i];
+    if (Math.abs(ghost.x - x) <= GHOSTTHRESHOLD
+    && Math.abs(ghost.y - y) <= GHOSTTHRESHOLD) {
+      return true;
+    }
+  }
+  
+  // Go through the whole list of ghosts:
+  return false;
+};
