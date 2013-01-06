@@ -14,6 +14,7 @@ var ESC = 27
 var FRAMELENGTH = 20; //20ms
 var PACSPEED = 2; //2 pixel per frame
 var PACRADIUS = 25;
+var GHOSTRADIUS = 15;
 var DOTRADIUS = 5;
 var TURNTHRESHOLD = 10; //How close do you need to be to a grid junction to turn
 var EATTHRESHOLD = 10; //How close do you need to be to eat something
@@ -110,7 +111,10 @@ for (i = 0; i < walls.length; i += 1) {
 // start at every walkable junction (the "odd" ones).
 var dots = [];
 
-
+// These are the ghosts that chase Pacanvasman:
+var ghosts = [
+  { x: 25, y: 25, color: 'red', direction: 'right', mode: 'chase' }
+];
 
 /*
  * Start the game:
@@ -234,9 +238,13 @@ var nextFrame = function() {
     drawDot(gameContext, dots[i]);
   }
   
+  // Render Pacanvasman:
   drawPac(gameContext, pacX, pacY, pacDirection, isMoving);
   
-  //pacWins();
+  // Render the ghosts:
+  for (i = 0; i < ghosts.length; i += 1) {
+    drawGhost(gameContext, ghosts[i]);
+  }
   
   // If there are no more dots, you win:
   if (dots.length === 0) {
@@ -318,6 +326,33 @@ var drawPac = function(context, x, y, facing, isMoving) {
   // Fill the eye:
   context.beginPath();
   context.arc(eyeX, eyeY, eyeRadius, startAngle, endAngle, isClockwise);
+  context.fill();
+};
+
+
+/*
+ * Render one of the ghosts
+ */
+var drawGhost = function(context, ghost) {
+  // First, draw the round top half of the ghost:
+  context.fillStyle = ghost.color;
+  var startAngle = 0;
+  var endAngle = Math.PI;
+  var isClockwise = true;
+  context.beginPath();
+  context.arc(ghost.x, ghost.y, GHOSTRADIUS, startAngle, endAngle, isClockwise);
+  
+  // Next, draw the jaggy bottom half:
+  context.lineTo(ghost.x - GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
+  context.lineTo(ghost.x - 0.75 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
+  context.lineTo(ghost.x - 0.5 * GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
+  context.lineTo(ghost.x - 0.25 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
+  context.lineTo(ghost.x, ghost.y + 1.5 * GHOSTRADIUS);
+  context.lineTo(ghost.x + 0.25 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
+  context.lineTo(ghost.x + 0.5 * GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
+  context.lineTo(ghost.x + 0.75 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
+  context.lineTo(ghost.x + GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
+  
   context.fill();
 };
 
