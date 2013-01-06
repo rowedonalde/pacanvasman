@@ -21,6 +21,7 @@ var EATTHRESHOLD = 10; //How close do you need to be to eat something
 var GHOSTTHRESHOLD = 5; //How close you need to be to a ghost to die
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
+var LEGALDIRECTIONS = ['up', 'down', 'left', 'right'];
 
 // Global variables for maintaining game state:
 var pacDirection = false,
@@ -29,8 +30,8 @@ frame = 0,
 gameContext,
 gameCanvas,
 interval,
-pacX,
-pacY,
+pacX = 250,
+pacY =  225,
 isPacAlive = true,
 i,
 j;
@@ -115,7 +116,7 @@ var dots = [];
 
 // These are the ghosts that chase Pacanvasman:
 var ghosts = [
-  { x: 25, y: 25, color: 'red', direction: 'right', mode: 'chase' }
+  { x: 25, y: 25, color: 'red', direction: 'right', mode: 'chase', speed: 2 }
 ];
 
 /*
@@ -137,8 +138,8 @@ window.onload = function() {
   // Start Pacanvasman facing to the right near the center of the canvas:
   //pacX = gameCanvas.width / 2;
   //pacY = gameCanvas.height / 2;
-  pacX = 250;
-  pacY = 225;
+  //pacX = 250;
+  //pacY = 225;
   drawPac(gameContext, pacX, pacY, 'right'); //if it's literally right, then pac doesn't
                                              //move until you hit an arrow
   
@@ -248,6 +249,7 @@ var nextFrame = function() {
   
   // Render the ghosts:
   for (i = 0; i < ghosts.length; i += 1) {
+    ghostNav(ghosts[i]);
     drawGhost(gameContext, ghosts[i]);
   }
   
@@ -648,4 +650,135 @@ var isGhostAt = function(x, y) {
   
   // Go through the whole list of ghosts:
   return false;
+};
+
+
+/*
+ * Decides a given ghost's next step by setting its direction
+ */
+var ghostNav = function(ghost) {  
+  // Coordinates of the target:
+  var targetX, targetY, dTarget;
+  
+  // For choosing the best direction:
+  var bestDistance, bestDirection, ghostCopy = {};
+  
+  // Legal choices the ghost has from its current point:
+  var currentChoices = [];
+  
+  // Loop counter:
+  var i, dir;
+  
+  // When a ghost is in chase mode, they're trying to get to Pacanvasman with
+  // the shortest route possible:
+  if (ghost.mode === 'chase') {
+    targetX = pacX;
+    targetY = pacY;
+  }
+  
+  // Check legal directions:
+  for (i = 0; i < LEGALDIRECTIONS.length; i += 1) {
+    dir = LEGALDIRECTIONS[i];
+    
+    if (!hasCollided(ghost.x, ghost.y, dir)) {
+      currentChoices.push(dir);
+      console.log(dir);
+    }
+  }
+  
+  //Test:
+  //clearInterval(interval);
+  
+  // If only one choice is available, go in that direction:
+  if (currentChoices.length === 1 ) {
+    //ghostStep(ghost);
+    ghost.direction = currentChoices[0];
+    //return;
+  } else {
+    // Cycle through the available legal choices and set the ghost's direction
+    // to the one that would bring it closest to its target.
+    ghostCopy.x = ghost.x;
+    ghostCopy.y = ghost.y;
+    ghostCopy.speed = ghost.speed;
+    
+    // First choice:
+    bestDirection = ghostCopy.direction = currentChoices[0];
+    console.log(ghostCopy.x);
+    ghostStep(ghostCopy);
+    console.log(ghostCopy.x);
+    bestDistance = distanceBetween(ghostCopy.x, ghostCopy.y, targetX, targetY);
+    //console.log(ghost.x);
+    
+    // Compare the remaining choices:
+    for (i = 1; i < currentChoices.length; i += 1) {
+      // Reset to current location of real ghost:
+      ghostCopy.x = ghost.x;
+      ghostCopy.y = ghost.y;
+      ghostCopy.direction = currentChoices[i];
+      
+      ghostStep(ghostCopy);
+      dTarget = distanceBetween(ghostCopy.x, ghostCopy.y, targetX, targetY);
+      //console.log(dTarget);
+      //console.log(ghost.x);
+      
+      if (dTarget < bestDistance) {
+        bestDistance = dTarget;
+        bestDirection = currentChoices[i];
+      }
+    }
+    
+    // Set the real ghost's direction to the "winner":
+    ghost.direction = bestDirection;
+  }
+  
+  ghostStep(ghost);
+};
+
+
+/*
+ * Updates a ghost's location based on its direction.
+ * If the step it takes would overshoot a junction, place it on the junction.
+ * This lets the ghost turn gracefully.
+ */
+var ghostStep = function(ghost) {
+  switch (ghost.direction) {
+      case 'left':
+        ghost.x -= ghost.speed;
+        if (GRIDSIZE - ghost.x % GRIDSIZE < ghost.speed) {
+          ghost.x += GRIDSIZE - ghost.x % GRIDSIZE;
+        }
+        break;
+      case 'right':
+        ghost.x += ghost.speed;
+        if (ghost.x % GRIDSIZE < ghost.speed) {
+          ghost.x -= ghost.x % GRIDSIZE;
+        }
+        break;
+      case 'up':
+        ghost.y -= ghost.speed;
+        if (GRIDSIZE - ghost.y % GRIDSIZE < ghost.speed) {
+          ghost.y += GRIDSIZE - ghost.y % GRIDSIZE;
+        }
+        break;
+      case 'down':
+        ghost.y += ghost.speed;
+        if (ghost.y % GRIDSIZE < ghost.speed) {
+          ghost.y -= ghost.y % GRIDSIZE;
+        }
+        break;
+      default:
+        break;
+    }
+};
+
+
+/*
+ * Utility function for determining the distance between two points
+ */
+var distanceBetween = function(startX, startY, endX, endY) {
+  var dX = Math.abs(startX - endX);
+  var dY = Math.abs(startY - endY);
+  
+  // Pythagorean theorem:
+  return Math.sqrt(dX * dX + dY * dY);
 };
