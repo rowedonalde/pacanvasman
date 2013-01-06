@@ -27,6 +27,8 @@ var LEGALDIRECTIONS = ['up', 'down', 'left', 'right'];
 var pacDirection = false,
 isMoving = false,
 frame = 0,
+dotsEaten = 0,
+timer = 0,
 gameContext,
 gameCanvas,
 interval,
@@ -253,6 +255,10 @@ var nextFrame = function() {
     drawGhost(gameContext, ghosts[i]);
   }
   
+  // Update the scoreboard:
+  document.getElementById("dotcounter").innerHTML = dotsEaten.toString() + " dots eaten";
+  document.getElementById("timer").innerHTML = Math.floor(timer / 1000).toString() + " seconds";
+  
   // If there are no more dots and you're still alive, you win:
   if (dots.length === 0 && isPacAlive) {
     pacWins();
@@ -262,6 +268,8 @@ var nextFrame = function() {
   if (!isPacAlive) {
     pacLoses();
   }
+  
+  timer += FRAMELENGTH;
 };
 
 
@@ -504,6 +512,7 @@ var handleTurn = function() {
 // in over the wall if there's a wall at the edge. Decide whether you want to
 // handle this case or only validate walls that have a corresponding wall on
 // the opposite edge (probably the latter).
+// FIXME: ghosts can get too close to walls
 var hasCollided = function(x, y, facing) {
   
   if (facing === 'left') {
@@ -595,6 +604,7 @@ var eatDot = function(x, y) {
     if (Math.abs(dot.x - x) <= EATTHRESHOLD
     && Math.abs(dot.y - y) <= EATTHRESHOLD) {
       dots.splice(i, 1);
+      dotsEaten += 1;
       return true;
     }
   }
