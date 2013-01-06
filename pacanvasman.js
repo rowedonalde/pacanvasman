@@ -180,6 +180,8 @@ window.onload = function() {
  * Resolve the gamestate for each frame:
  */
 var nextFrame = function() {
+  
+
   if (isMoving && !(hasCollided(pacX, pacY, pacDirection))) {
     // Update pacanvasman coordinates if he can move:
     switch (pacDirection) {
@@ -233,6 +235,13 @@ var nextFrame = function() {
   }
   
   drawPac(gameContext, pacX, pacY, pacDirection, isMoving);
+  
+  //pacWins();
+  
+  // If there are no more dots, you win:
+  if (dots.length === 0) {
+    pacWins();
+  }
 };
 
 
@@ -542,4 +551,19 @@ var eatDot = function(x, y) {
   }
   // Go through the whole list of dots;
   return false;
+}
+
+/*
+ * Triggers a win state for Pacanvasman
+ */
+var pacWins = function() {
+  // Kill animation:
+  clearInterval(interval);
+  
+  // Draw announcement:
+  gameContext.font = '72px sans-serif';
+  gameContext.textAlign = 'center';
+  gameContext.textBaseline = 'middle';
+  gameContext.fillStyle = 'orange';
+  gameContext.fillText('YOU WIN!', gameCanvas.width / 2, gameCanvas.height / 2);
 }
