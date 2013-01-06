@@ -512,7 +512,6 @@ var handleTurn = function() {
 // in over the wall if there's a wall at the edge. Decide whether you want to
 // handle this case or only validate walls that have a corresponding wall on
 // the opposite edge (probably the latter).
-// FIXME: ghosts can get too close to walls
 var hasCollided = function(x, y, facing) {
   
   if (facing === 'left') {
@@ -521,8 +520,10 @@ var hasCollided = function(x, y, facing) {
     for (var i = 0; i < verticalWalls.length; i += 1) {
       if (verticalWalls[i].startX < x
       && x - verticalWalls[i].startX <= GRIDSIZE
-      && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
-      && y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
+      // Need the GRIDSIZE here since ghosts were able to move along the ends
+      // of perpendicular walls:
+      && y - GRIDSIZE < Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+      && y + GRIDSIZE > Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
         return true;
       }
     }
@@ -542,8 +543,8 @@ var hasCollided = function(x, y, facing) {
     for (i = 0; i < verticalWalls.length; i += 1) {
       if (verticalWalls[i].startX > x
       && verticalWalls[i].startX - x <= GRIDSIZE
-      && y <= Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
-      && y >= Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
+      && y - GRIDSIZE < Math.max(verticalWalls[i].startY, verticalWalls[i].endY)
+      && y + GRIDSIZE > Math.min(verticalWalls[i].startY, verticalWalls[i].endY)) {
         return true;
       } 
     }
@@ -560,8 +561,8 @@ var hasCollided = function(x, y, facing) {
     for (i = 0; i < horizontalWalls.length; i += 1) {
       if (horizontalWalls[i].startY < y
       && y - horizontalWalls[i].startY <= GRIDSIZE
-      && x <= Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
-      && x >= Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
+      && x - GRIDSIZE < Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
+      && x + GRIDSIZE > Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
         return true;
       }
     }
@@ -575,8 +576,8 @@ var hasCollided = function(x, y, facing) {
     for (i = 0; i < horizontalWalls.length; i += 1) {
       if (horizontalWalls[i].startY > y
       && horizontalWalls[i].startY - y <= GRIDSIZE
-      && x <= Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
-      && x >= Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
+      && x - GRIDSIZE < Math.max(horizontalWalls[i].startX, horizontalWalls[i].endX)
+      && x + GRIDSIZE > Math.min(horizontalWalls[i].startX, horizontalWalls[i].endX)) {
         return true;
       }      
     }
