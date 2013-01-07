@@ -22,6 +22,9 @@ var GHOSTTHRESHOLD = 5; //How close you need to be to a ghost to die
 var GRIDSIZE = 25; //The distance between grid junctions
 var WALLTHICKNESS = 5;
 var LEGALDIRECTIONS = ['up', 'down', 'left', 'right'];
+// Ghost eye components:
+var GHOSTSCLERARAD = 5;
+var GHOSTPUPILRAD = 2;
 
 // Global variables for maintaining game state:
 var pacDirection = false,
@@ -373,8 +376,58 @@ var drawGhost = function(context, ghost) {
   context.lineTo(ghost.x + 0.75 * GHOSTRADIUS, ghost.y + GHOSTRADIUS);
   context.lineTo(ghost.x + GHOSTRADIUS, ghost.y + 1.5 * GHOSTRADIUS);
   
-  // TODO draw the eyes
+  context.fill()
   
+  // Draw the eyes:
+  // Left sclera:
+  context.fillStyle = 'white';
+  var leftScleraX = ghost.x - 0.5 * GHOSTRADIUS;
+  var leftScleraY = ghost.y;
+  endAngle = 2 * Math.PI;
+  context.beginPath()
+  context.arc(leftScleraX, leftScleraY, GHOSTSCLERARAD, startAngle, endAngle, isClockwise);
+  context.fill();
+  
+  // Right sclera:
+  var rightScleraX = ghost.x + 0.5 * GHOSTRADIUS;
+  var rightScleraY = ghost.y;
+  context.beginPath()
+  context.arc(rightScleraX, rightScleraY, GHOSTSCLERARAD, startAngle, endAngle, isClockwise);
+  context.fill();
+  
+  // Figure out pupil directions:
+  var leftPupilX, leftPupilY, rightPupilX, rightPupilY;
+  // Each pupil should be pointed directly at Pacanvasman:
+  // Distance of each eye to Pacanvasman:
+  var leftEyeDX = pacX - leftScleraX;
+  var leftEyeDY = pacY - leftScleraY;
+  var leftEyeDH = distanceBetween(pacX, pacY, leftScleraX, leftScleraY);
+  var rightEyeDX = pacX - rightScleraX;
+  var rightEyeDY = pacY - rightScleraY;
+  var rightEyeDH = distanceBetween(pacX, pacY, rightScleraX, rightScleraY);
+  // Use similar triangles:
+  // Distance of each pupil to the center of the eye it's in:
+  var pupilDH = GHOSTSCLERARAD - GHOSTPUPILRAD;
+  // Ratio of the pupil's distance from the center of the eye to Pacanvasman's
+  // distance from the center of each eye:
+  var leftPupilRatio = pupilDH / leftEyeDH;
+  var rightPupilRatio = pupilDH / rightEyeDH;
+  // The component distance of each pupil from the center of the eye:
+  var leftPupilDX = leftPupilRatio * leftEyeDX;
+  var leftPupilDY = leftPupilRatio * leftEyeDY;
+  var rightPupilDX = rightPupilRatio * rightEyeDX;
+  var rightPupilDY = rightPupilRatio * rightEyeDY;
+  
+  // Draw the pupils:
+  context.fillStyle = 'black';
+  context.beginPath();
+  context.arc(leftScleraX + leftPupilDX, leftScleraY + leftPupilDY,
+              GHOSTPUPILRAD, startAngle, endAngle, isClockwise);
+  context.fill();
+  
+  context.beginPath();
+  context.arc(rightScleraX + rightPupilDX, rightScleraY + rightPupilDY,
+              GHOSTPUPILRAD, startAngle, endAngle, isClockwise);
   context.fill();
 };
 
