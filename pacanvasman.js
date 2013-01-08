@@ -157,18 +157,22 @@ window.onload = function() {
     
     switch (keyCode) {
       case LEFT:
+        event.preventDefault();
         pacDirection = 'left';
         handleTurn();
         break;
       case RIGHT:
+        event.preventDefault();
         pacDirection = 'right';
         handleTurn();
         break;
       case UP:
+        event.preventDefault();
         pacDirection = 'up';
         handleTurn()
         break;
       case DOWN:
+        event.preventDefault();
         pacDirection = 'down';
         handleTurn();
         break;
