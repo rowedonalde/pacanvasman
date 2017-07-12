@@ -45,9 +45,6 @@ j;
 // tracks that the characters follow. Also, if a wall is built on the
 // perimeter, a corresponding wall should be built on the opposite edge.
 var walls = [
-  //{ startX: 0, startY: 50, endX: 500, endY: 50 },
-  //{ startX: 100, startY: 100, endX: 100, endY: 400 },
-  //{ startX: 0, startY: 0, endX: 500, endY: 0 }
   // Edge walls:
   { startX: 0, startY: 0, endX: 50, endY: 0 },
   { startX: 100, startY: 0, endX: 400, endY: 0 },
@@ -141,10 +138,6 @@ window.onload = function() {
   }
   
   // Start Pacanvasman facing to the right near the center of the canvas:
-  //pacX = gameCanvas.width / 2;
-  //pacY = gameCanvas.height / 2;
-  //pacX = 250;
-  //pacY = 225;
   drawPac(gameContext, pacX, pacY, 'right'); //if it's literally right, then pac doesn't
                                              //move until you hit an arrow
   
@@ -233,7 +226,6 @@ var nextFrame = function() {
   pacY = pacY % gameCanvas.height;
   
   // Try to eat a dot where pacanvasman ends up:
-  //eatDot(25, 25);
   if (eatDot(pacX, pacY)) {
     console.log('nom');
   }
@@ -515,7 +507,6 @@ var handleTurn = function() {
   // Handle horizontal:
   if (pacDirection === 'left' || pacDirection === 'right') {
     distanceSinceCorner = pacY % GRIDSIZE;
-    //console.log(distanceSinceCorner);
     
     // If you're slightly ahead of the corner:
     // TODO: These should also check for walls once I get those going
@@ -537,7 +528,6 @@ var handleTurn = function() {
   } else {
     //Handle vertical:
     distanceSinceCorner = pacX % GRIDSIZE;
-    //console.log(distanceSinceCorner);
     
     // If you're slightly ahead of the corner:
     // TODO: These should also check for walls once I get those going
@@ -754,14 +744,9 @@ var ghostNav = function(ghost) {
     }
   }
   
-  //Test:
-  //clearInterval(interval);
-  
   // If only one choice is available, go in that direction:
   if (currentChoices.length === 1 ) {
-    //ghostStep(ghost);
     ghost.direction = currentChoices[0];
-    //return;
   } else {
     // Cycle through the available legal choices and set the ghost's direction
     // to the one that would bring it closest to its target.
@@ -775,7 +760,6 @@ var ghostNav = function(ghost) {
     ghostStep(ghostCopy);
     console.log(ghostCopy.x);
     bestDistance = distanceBetween(ghostCopy.x, ghostCopy.y, targetX, targetY);
-    //console.log(ghost.x);
     
     // Compare the remaining choices:
     for (i = 1; i < currentChoices.length; i += 1) {
@@ -786,8 +770,6 @@ var ghostNav = function(ghost) {
       
       ghostStep(ghostCopy);
       dTarget = distanceBetween(ghostCopy.x, ghostCopy.y, targetX, targetY);
-      //console.log(dTarget);
-      //console.log(ghost.x);
       
       if (dTarget < bestDistance) {
         bestDistance = dTarget;
